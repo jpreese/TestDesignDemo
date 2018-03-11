@@ -6,6 +6,7 @@ namespace Unit
     {
         private readonly IFileProvider _fileProvider;
         public static readonly int MessageTax = 5;
+        public static readonly int MaximumCost = 25;
 
         public PriceCalculator(IFileProvider fileProvider)
         {
@@ -15,9 +16,9 @@ namespace Unit
         {
             var input = _fileProvider.ReadAllText(path);
 
-            if (input.Length >= 20)
+            if (MessageExceedsMaximumLength(input))
             {
-                return 25;
+                return MaximumCost;
             }
 
             if (MessageIsLarge(input))
@@ -26,6 +27,11 @@ namespace Unit
             }
 
             return HandleSmallMessage(input);
+        }
+
+        private static bool MessageExceedsMaximumLength(string input)
+        {
+            return input.Length >= 20;
         }
 
         private static int HandleSmallMessage(string input)

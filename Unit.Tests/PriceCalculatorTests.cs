@@ -16,9 +16,7 @@ namespace Unit.Tests
         [InlineData("ab")]
         public void Calculate_WhenSmallMessage_ReturnsMessageSize(string input)
         {
-            var fileProvider = new Mock<IFileProvider>();
-            fileProvider.Setup(fp => fp.ReadAllText(It.IsAny<string>())).Returns(input);
-            var priceCalculator = new PriceCalculator(fileProvider.Object);
+            var priceCalculator = CreatePriceCalculatorWithInput(input);
 
             var result = priceCalculator.Calculate(It.IsAny<string>());
 
@@ -27,27 +25,32 @@ namespace Unit.Tests
 
         [Theory]
         [InlineData("abc")]
+        [InlineData("abcd")]
         public void Calculate_WhenLargeMessage_AddsMessageTax(string input)
         {
-            var fileProvider = new Mock<IFileProvider>();
-            fileProvider.Setup(fp => fp.ReadAllText(It.IsAny<string>())).Returns(input);
-            var priceCalculator = new PriceCalculator(fileProvider.Object);
+            var priceCalculator = CreatePriceCalculatorWithInput(input);
 
             var result = priceCalculator.Calculate(It.IsAny<string>());
 
             Assert.Equal(input.Length + PriceCalculator.MessageTax, result);
         }
 
-        [Property(Verbose = true)]
+        [Property]
         public void Calculate_WhenMessageExceedsMaximumSize_ReturnsMaximumCost(NonNull<string> input)
         {
-            var fileProvider = new Mock<IFileProvider>();
-            fileProvider.Setup(fp => fp.ReadAllText(It.IsAny<string>())).Returns(input.Get);
-            var priceCalculator = new PriceCalculator(fileProvider.Object);
+            var priceCalculator = CreatePriceCalculatorWithInput(input.Get);
 
             var result = priceCalculator.Calculate(It.IsAny<string>());
 
-            Assert.True(result <= 25);
+            Assert.True(result <= PriceCalculator.MaximumCost);
+        }
+
+        private PriceCalculator CreatePriceCalculatorWithInput(string input)
+        {
+            var fileProvider = new Mock<IFileProvider>();
+            fileProvider.Setup(fp => fp.ReadAllText(It.IsAny<string>())).Returns(input);
+
+            return new PriceCalculator(fileProvider.Object);
         }
     }
 }
